@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { Check, ImagePlus, Mic, Type, Plus } from "lucide-react";
+import { Check, ImagePlus, Mic, Type, Plus, Send } from "lucide-react";
 import { useRef, useState, type ReactNode } from "react";
 import { toast } from "sonner";
 import { DollPortrait } from "@/components/doll-portrait";
@@ -54,6 +54,11 @@ function WorryDetail() {
     if (!content.trim() && !photo) return;
     addNote(worry!.id, { type, content: content.trim() || "عکس", photoDataUrl: photo });
     setDraft("");
+  }
+
+  function saveActiveWorry() {
+    if (draft.trim()) saveNote("text", draft);
+    toast("نگرانی ذخیره شد.");
   }
 
   async function onPhoto(file?: File) {
@@ -151,16 +156,27 @@ function WorryDetail() {
           <>
             <div className="mt-6 rounded-2xl bg-card px-3 py-2 shadow-card">
               <div className="flex items-center gap-2">
-                <Plus className="size-4 text-muted" />
+                <Plus className="size-4 shrink-0 text-muted" />
                 <input
                   value={draft}
                   onChange={(e) => setDraft(e.target.value)}
                   placeholder="یه خط برای بعد"
-                  className="h-11 flex-1 bg-transparent text-sm outline-none placeholder:text-muted"
+                  className="h-11 min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-muted"
                   onKeyDown={(e) => {
-                    if (e.key === "Enter") saveNote("text", draft);
+                    if (e.key === "Enter" && !e.nativeEvent.isComposing && e.keyCode !== 229) {
+                      saveNote("text", draft);
+                    }
                   }}
                 />
+                <button
+                  type="button"
+                  aria-label="ثبت متن"
+                  disabled={!draft.trim()}
+                  onClick={() => saveNote("text", draft)}
+                  className="tap flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary text-white transition-opacity disabled:cursor-not-allowed disabled:opacity-35"
+                >
+                  <Send className="size-4" />
+                </button>
               </div>
             </div>
             <div className="mt-3 grid grid-cols-3 gap-2">
@@ -190,13 +206,17 @@ function WorryDetail() {
               className="hidden"
               onChange={(e) => onPhoto(e.target.files?.[0])}
             />
-            <Button
-              className="mt-6"
-              onClick={() => openRitual({ kind: "resolve", worryId: worry.id })}
-            >
-              <Check className="size-4" />
-              این نگرانی تموم شد
-            </Button>
+            <div className="mt-6 grid grid-cols-2 gap-2">
+              <Button
+                onClick={() => openRitual({ kind: "resolve", worryId: worry.id })}
+              >
+                <Check className="size-4" />
+                این نگرانی تموم شد
+              </Button>
+              <Button variant="secondary" onClick={saveActiveWorry}>
+                ذخیره نگرانی
+              </Button>
+            </div>
           </>
         )}
 
