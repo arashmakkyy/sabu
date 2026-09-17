@@ -2,8 +2,7 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { DOLLS, type CategoryId, type DollId } from "./dolls";
 import { uid } from "./id";
-import { isoDay } from "./persian";
-import { buildDemoMoods, buildDemoWorries } from "./seed";
+import { isoDay, isNightHour, nightKey } from "./persian";
 import type {
   AppNotification,
   MoodValue,
@@ -19,22 +18,31 @@ import type { SabooBackupData } from "./backup";
 type RitualState =
   | { kind: "hand"; worryId: string }
   | { kind: "breath"; worryId: string }
-  | { kind: "night" }
+  | { kind: "night"; via: "gate" | "manual" }
   | { kind: "mood" }
   | { kind: "resolve"; worryId: string }
+  | null;
+
+type GuideState =
+  | { phase: "ask" }
+  | { phase: "run"; step: number }
   | null;
 
 type SabooState = {
   hydrated: boolean;
   onboarded: boolean;
+  guideDone: boolean;
   worries: Worry[];
   moods: { date: string; mood: MoodValue }[];
   notifications: AppNotification[];
   settings: Settings;
   lastNightRitualDay?: string;
   lastMoodPromptDay?: string;
+  lastAutoSleepNight?: string;
+  dollsAsleep: boolean;
   ritual: RitualState;
   notifOpen: boolean;
+  guide: GuideState;
 
   markHydrated: () => void;
   completeOnboarding: () => void;
@@ -54,11 +62,18 @@ type SabooState = {
   closeRitual: () => void;
   setNotifOpen: (open: boolean) => void;
   completeNightRitual: () => void;
+  wakeDolls: () => void;
+  putDollsToSleep: () => void;
+  maybeNightGate: () => void;
   maybeDailyPrompts: () => void;
   resetAll: () => void;
-  loadDemo: () => void;
   snapshot: () => SabooBackupData;
   importSnapshot: (data: SabooBackupData) => void;
+  skipGuide: () => void;
+  startGuide: () => void;
+  nextGuide: () => void;
+  prevGuide: () => void;
+  maybeAskGuide: () => void;
 };
 
 const defaultSettings: Settings = {
@@ -97,28 +112,22 @@ export const useSaboo = create<SabooState>()(
     (set, get) => ({
       hydrated: false,
       onboarded: false,
+      guideDone: false,
       worries: [],
       moods: [],
       notifications: [],
       settings: defaultSettings,
       ritual: null,
       notifOpen: false,
+      guide: null,
+      dollsAsleep: false,
 
       markHydrated: () => set({ hydrated: true }),
 
       completeOnboarding: () => {
-        const hasData = get().worries.length > 0;
         set({
           onboarded: true,
-          worries: hasData ? get().worries : buildDemoWorries(),
-          moods: hasData ? get().moods : buildDemoMoods(),
-          notifications: hasData
-            ? get().notifications
-            : pushNotif(
-                [],
-                "سبو آماده‌ست",
-                "نگرانی‌هاتو اینجا بذار.",
-              ),
+          guide: get().guideDone ? null : { phase: "ask" },
         });
       },
 
@@ -250,8 +259,36 @@ export const useSaboo = create<SabooState>()(
       },
 
       completeNightRitual: () => {
-        set({ lastNightRitualDay: isoDay(), ritual: null });
+        set({ ritual: null });
         feedback("chime", get().settings);
+      },
+      wakeDolls: () => {
+        set({ dollsAsleep: false, ritual: null });
+        feedback("chime", get().settings);
+      },
+      putDollsToSleep: () => {
+        set({ dollsAsleep: true, ritual: { kind: "night", via: "manual" } });
+        feedback("chime", get().settings);
+      },
+      maybeNightGate: () => {
+        const s = get();
+        if (!s.settings.nightRitual) return;
+        if (!isNightHour()) return;
+        if (s.guide) return;
+        if (s.ritual) return;
+
+        const key = nightKey();
+        let dollsAsleep = s.dollsAsleep;
+        let lastAutoSleepNight = s.lastAutoSleepNight;
+        if (lastAutoSleepNight !== key) {
+          dollsAsleep = true;
+          lastAutoSleepNight = key;
+        }
+        set({
+          dollsAsleep,
+          lastAutoSleepNight,
+          ritual: dollsAsleep ? { kind: "night", via: "gate" } : s.ritual,
+        });
       },
 
       maybeDailyPrompts: () => {
@@ -259,7 +296,6 @@ export const useSaboo = create<SabooState>()(
         const hour = new Date().getHours();
         const s = get();
         let notifications = s.notifications;
-        let ritual = s.ritual;
         let lastMoodPromptDay = s.lastMoodPromptDay;
 
         const hasMoodToday = s.moods.some((m) => m.date === today);
@@ -281,7 +317,7 @@ export const useSaboo = create<SabooState>()(
             "بذارشون زیر بالش. مهتاب تا صبح بیداره.",
           );
         }
-        set({ notifications, ritual, lastMoodPromptDay });
+        set({ notifications, lastMoodPromptDay });
       },
 
       resetAll: () => {
@@ -292,39 +328,60 @@ export const useSaboo = create<SabooState>()(
           notifications: [],
           lastNightRitualDay: undefined,
           lastMoodPromptDay: undefined,
+          lastAutoSleepNight: undefined,
+          dollsAsleep: false,
           ritual: null,
+          guide: null,
         });
       },
 
-      loadDemo: () => {
-        set({
-          onboarded: true,
-          worries: buildDemoWorries(),
-          moods: buildDemoMoods(),
-          notifications: pushNotif(
-            [],
-            "نمونه اومد",
-            "چند تا نگرانی نمونه گذاشتم تا حسش کنی.",
-          ),
-        });
+      skipGuide: () => {
+        set({ guide: null, guideDone: true });
+        queueMicrotask(() => get().maybeNightGate());
+      },
+      startGuide: () => set({ guide: { phase: "run", step: 0 }, guideDone: false }),
+      maybeAskGuide: () => {
+        const s = get();
+        if (s.onboarded && !s.guideDone && !s.guide) {
+          set({ guide: { phase: "ask" } });
+        }
+      },
+      nextGuide: () => {
+        const g = get().guide;
+        if (!g || g.phase !== "run") return;
+        if (g.step >= 3) {
+          set({ guide: null, guideDone: true });
+          queueMicrotask(() => get().maybeNightGate());
+          return;
+        }
+        set({ guide: { phase: "run", step: g.step + 1 } });
+      },
+      prevGuide: () => {
+        const g = get().guide;
+        if (!g || g.phase !== "run" || g.step <= 0) return;
+        set({ guide: { phase: "run", step: g.step - 1 } });
       },
 
       snapshot: () => {
         const s = get();
         return {
           onboarded: s.onboarded,
+          guideDone: s.guideDone,
           worries: s.worries,
           moods: s.moods,
           notifications: s.notifications,
           settings: s.settings,
           lastNightRitualDay: s.lastNightRitualDay,
           lastMoodPromptDay: s.lastMoodPromptDay,
+          lastAutoSleepNight: s.lastAutoSleepNight,
+          dollsAsleep: s.dollsAsleep,
         };
       },
 
       importSnapshot: (data) => {
         set({
           onboarded: data.onboarded,
+          guideDone: data.guideDone ?? true,
           worries: data.worries,
           moods: data.moods,
           notifications: pushNotif(
@@ -335,24 +392,34 @@ export const useSaboo = create<SabooState>()(
           settings: data.settings,
           lastNightRitualDay: data.lastNightRitualDay,
           lastMoodPromptDay: data.lastMoodPromptDay,
+          lastAutoSleepNight: data.lastAutoSleepNight,
+          dollsAsleep: data.dollsAsleep ?? false,
           ritual: null,
           notifOpen: false,
+          guide: null,
         });
       },
     }),
     {
-      name: "saboo-v1",
+      name: "saboo-v2",
       partialize: (s) => ({
         onboarded: s.onboarded,
+        guideDone: s.guideDone,
         worries: s.worries,
         moods: s.moods,
         notifications: s.notifications,
         settings: s.settings,
         lastNightRitualDay: s.lastNightRitualDay,
         lastMoodPromptDay: s.lastMoodPromptDay,
+        lastAutoSleepNight: s.lastAutoSleepNight,
+        dollsAsleep: s.dollsAsleep,
       }),
-      onRehydrateStorage: () => () => {
-        useSaboo.setState({ hydrated: true });
+      onRehydrateStorage: () => (state) => {
+        const needAsk = Boolean(state?.onboarded && !state.guideDone);
+        useSaboo.setState({
+          hydrated: true,
+          guide: needAsk ? { phase: "ask" } : null,
+        });
       },
     },
   ),

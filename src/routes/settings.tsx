@@ -13,10 +13,11 @@ function Settings() {
   const settings = useSaboo((s) => s.settings);
   const updateSettings = useSaboo((s) => s.updateSettings);
   const resetAll = useSaboo((s) => s.resetAll);
-  const loadDemo = useSaboo((s) => s.loadDemo);
   const snapshot = useSaboo((s) => s.snapshot);
   const importSnapshot = useSaboo((s) => s.importSnapshot);
+  const putDollsToSleep = useSaboo((s) => s.putDollsToSleep);
   const openRitual = useSaboo((s) => s.openRitual);
+  const startGuide = useSaboo((s) => s.startGuide);
   const [name, setName] = useState(settings.displayName);
   const [status, setStatus] = useState<{ kind: "ok" | "err"; text: string } | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
@@ -103,7 +104,7 @@ function Settings() {
       <section className="mt-4 overflow-hidden rounded-3xl bg-card shadow-card">
         <button
           type="button"
-          onClick={() => openRitual({ kind: "night" })}
+          onClick={() => putDollsToSleep()}
           className="flex w-full items-center justify-between px-4 py-4 text-right"
         >
           <span>
@@ -133,7 +134,7 @@ function Settings() {
         </button>
       </section>
 
-      <section className="mt-4 rounded-3xl bg-card px-5 py-5 shadow-card">
+      <section className="mt-4 rounded-3xl bg-card px-5 py-5 shadow-card" data-tour="backup">
         <h2 className="text-sm font-semibold">خروجی و ورود</h2>
         <p className="mt-2 text-sm leading-7 text-ink-soft">
           همه نگرانی‌ها، حال‌ها و عکسا تو یه فایل می‌مونه. ببرش رو گوشی دیگه.
@@ -184,8 +185,8 @@ function Settings() {
       </section>
 
       <div className="mt-5 space-y-2">
-        <Button variant="secondary" className="w-full" onClick={loadDemo}>
-          داده نمونه
+        <Button variant="secondary" className="w-full" onClick={startGuide}>
+          دوباره راهنما
         </Button>
         <Button
           variant="ghost"

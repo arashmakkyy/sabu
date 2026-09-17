@@ -17,7 +17,7 @@ export function Overlays() {
       {notifOpen && <NotifSheet />}
       {ritual?.kind === "hand" && <HandRitual worryId={ritual.worryId} />}
       {ritual?.kind === "breath" && <BreathRitual worryId={ritual.worryId} />}
-      {ritual?.kind === "night" && <NightRitual />}
+      {ritual?.kind === "night" && <NightRitual via={ritual.via} />}
       {ritual?.kind === "mood" && <MoodSheet />}
       {ritual?.kind === "resolve" && <ResolveSheet worryId={ritual.worryId} />}
     </>
@@ -123,8 +123,10 @@ function BreathRitual({ worryId }: { worryId: string }) {
   );
 }
 
-function NightRitual() {
-  const complete = useSaboo((s) => s.completeNightRitual);
+function NightRitual({ via }: { via: "gate" | "manual" }) {
+  const wake = useSaboo((s) => s.wakeDolls);
+  const close = useSaboo((s) => s.closeRitual);
+  const gate = via === "gate";
   return (
     <Backdrop>
       <div className="relative flex flex-1 flex-col">
@@ -140,8 +142,8 @@ function NightRitual() {
           <p className="mt-3 text-sm leading-7 text-primary-fg/85">
             تا صبح پیش مهتاب می‌مونن. تو بخواب.
           </p>
-          <Button className="mt-6" onClick={complete}>
-            شب بخیر
+          <Button className="mt-6" onClick={gate ? wake : close}>
+            {gate ? "دیدن عروسک‌ها" : "شب بخیر"}
           </Button>
         </div>
       </div>
@@ -246,7 +248,7 @@ function ResolveSheet({ worryId }: { worryId: string }) {
 function NotifSheet() {
   const items = useSaboo((s) => s.notifications);
   const setNotifOpen = useSaboo((s) => s.setNotifOpen);
-  const openRitual = useSaboo((s) => s.openRitual);
+  const putDollsToSleep = useSaboo((s) => s.putDollsToSleep);
   const hour = useMemo(() => new Date().getHours(), []);
 
   return (
@@ -259,7 +261,7 @@ function NotifSheet() {
             type="button"
             onClick={() => {
               setNotifOpen(false);
-              openRitual({ kind: "night" });
+              putDollsToSleep();
             }}
             className="tap mt-5 overflow-hidden rounded-2xl text-right shadow-card"
           >

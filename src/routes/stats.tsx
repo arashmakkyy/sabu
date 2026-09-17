@@ -73,14 +73,22 @@ function Stats() {
         <p className="mt-1 text-4xl font-semibold tabular-nums">
           {toFaDigits(streak)} روز
         </p>
-        <p className="mt-2 text-sm leading-6 text-primary-fg/85">{quote}</p>
+        <p className="mt-2 text-sm leading-6 text-primary-fg/85">
+          {streak === 0 ? "از امروز می‌تونه شروع بشه." : quote}
+        </p>
       </section>
 
       <div className="enter-up-2 mt-4 grid grid-cols-2 gap-3">
         <Mini label="فعال" value={toFaDigits(stats.activeCount)} />
         <Mini label="تموم‌شده" value={toFaDigits(stats.resolvedCount)} />
-        <Mini label="آروم‌تر از فکر" value={`${toFaDigits(stats.percent)}٪`} />
-        <Mini label="میانگین عمر" value={formatDurationDays(stats.avgMs)} />
+        <Mini
+          label="آروم‌تر از فکر"
+          value={stats.resolvedCount === 0 ? "—" : `${toFaDigits(stats.percent)}٪`}
+        />
+        <Mini
+          label="میانگین عمر"
+          value={stats.resolvedCount === 0 ? "—" : formatDurationDays(stats.avgMs)}
+        />
       </div>
 
       <section className="enter-up-3 mt-6 rounded-3xl bg-card p-4 shadow-card">
@@ -132,12 +140,14 @@ function Stats() {
         <h2 className="text-sm font-semibold">الان پیش عروسک‌ها</h2>
         <p className="mt-1 text-sm leading-6 text-muted">
           {active.length === 0
-            ? "سبو خالیه. یه نفس بکش."
+            ? "هنوز چیزی پیش عروسکا نیست. وقتی آماده بودی بسپار."
             : `${toFaDigits(active.length)} تا هنوز فعاله. لازم نیست همه‌رو امروز تموم کنی.`}
         </p>
-        <Button className="mt-4" variant="secondary" onClick={shareInsight}>
-          اشتراک بده
-        </Button>
+        {stats.resolvedCount > 0 && (
+          <Button className="mt-4" variant="secondary" onClick={shareInsight}>
+            اشتراک بده
+          </Button>
+        )}
       </section>
     </div>
   );

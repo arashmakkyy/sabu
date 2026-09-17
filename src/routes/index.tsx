@@ -1,10 +1,9 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { Bell, PencilLine, Send } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { DollPortrait } from "@/components/doll-portrait";
 import { Button, IconButton } from "@/components/ui";
 import { categoryLabel, getDoll } from "@/lib/dolls";
-import { quoteForDay } from "@/lib/quotes";
 import { toFaDigits } from "@/lib/persian";
 import { selectActive, useSaboo } from "@/lib/store";
 
@@ -18,7 +17,6 @@ function Home() {
   const name = useSaboo((s) => s.settings.displayName);
   const [draft, setDraft] = useState("");
   const active = selectActive(worries);
-  const quote = useMemo(() => quoteForDay(), []);
 
   const dollCards = active.reduce<
     { dollId: string; label: string; worryId: string }[]
@@ -48,7 +46,7 @@ function Home() {
               : "جای نگرانی‌هات و آرامش فردا"}
           </p>
         </div>
-        <div className="relative">
+        <div className="relative" data-tour="bell">
           <IconButton label="یادآوری‌ها" onClick={() => setNotifOpen(true)}>
             <Bell className="size-5" strokeWidth={1.7} />
           </IconButton>
@@ -76,7 +74,7 @@ function Home() {
         </p>
       </section>
 
-      <section className="enter-up-3 mt-6">
+      <section className="enter-up-3 mt-6" data-tour="compose">
         <h2 className="text-lg font-semibold">امروز حالت چطوره؟</h2>
         <p className="mt-3 text-sm font-medium text-ink-soft">چی ذهنت رو درگیر کرده؟</p>
         <div className="mt-3 flex items-center gap-3 rounded-2xl bg-card px-4 py-2 shadow-card">
@@ -97,7 +95,7 @@ function Home() {
         </Button>
       </section>
 
-      <section className="enter-up-4 mt-8">
+      <section className="enter-up-4 mt-8" data-tour="dolls">
         <div className="flex items-center justify-between">
           <h2 className="text-base font-semibold">عروسک‌های فعال من</h2>
           <button
@@ -109,11 +107,15 @@ function Home() {
           </button>
         </div>
         {dollCards.length === 0 ? (
-          <p className="mt-4 rounded-2xl bg-card px-4 py-6 text-center text-sm leading-7 text-muted shadow-card">
-            {quote}
-            <br />
-            هنوز چیزی فعال نیست. هر وقت خواستی بسپار.
-          </p>
+          <div className="mt-4 rounded-3xl bg-card px-5 py-7 text-center shadow-card">
+            <div className="mx-auto size-16 overflow-hidden rounded-full shadow-card">
+              <img src="/dolls/mehr.jpg" alt="" className="size-full object-cover" />
+            </div>
+            <p className="mt-3 text-sm font-medium">هنوز کسی بیدار نیست.</p>
+            <p className="mt-1 text-xs leading-5 text-muted">
+              اولین نگرانی‌تو که بسپاری، عروسکش این‌جا می‌شینه.
+            </p>
+          </div>
         ) : (
           <div className="-mx-5 mt-4 flex gap-3 overflow-x-auto px-5 pb-2">
             {dollCards.map((d) => (

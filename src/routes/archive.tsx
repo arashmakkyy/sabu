@@ -18,27 +18,43 @@ function Archive() {
     <div className="px-5 pb-8 pt-6">
       <h1 className="text-center text-xl font-semibold">آرشیو و بینش</h1>
 
-      <section className="enter-up relative mt-5 overflow-hidden rounded-3xl shadow-card">
+      <section
+        className="enter-up relative mt-5 overflow-hidden rounded-3xl shadow-card"
+        data-tour="archive-hero"
+      >
         <img src="/scenes/hills.jpg" alt="" className="h-44 w-full object-cover" />
         <div className="absolute inset-0 bg-linear-to-t from-ink/25 to-transparent" />
         <div className="absolute inset-0 flex flex-col items-center justify-center px-6 text-center text-ink">
-          <p className="text-5xl font-semibold tabular-nums">
-            {toFaDigits(stats.percent)}٪
-          </p>
-          <p className="mt-2 max-w-56 text-sm font-medium leading-6">
-            بیشتر نگرانی‌ها بهتر از چیزی بود که فکر می‌کردی
-          </p>
+          {stats.resolvedCount === 0 ? (
+            <>
+              <p className="text-xl font-semibold">هنوز آرشیوی نیست</p>
+              <p className="mt-2 max-w-56 text-sm font-medium leading-6">
+                وقتی یه نگرانی تموم بشه، این‌جا آروم می‌شینه.
+              </p>
+            </>
+          ) : (
+            <>
+              <p className="text-5xl font-semibold tabular-nums">
+                {toFaDigits(stats.percent)}٪
+              </p>
+              <p className="mt-2 max-w-56 text-sm font-medium leading-6">
+                بیشتر نگرانی‌ها بهتر از چیزی بود که فکر می‌کردی
+              </p>
+            </>
+          )}
         </div>
       </section>
-      <p className="mt-3 text-center text-xs text-muted">
-        هر نگرانی، یه قدم آروم‌تر.
-      </p>
+      {stats.resolvedCount > 0 && (
+        <p className="mt-3 text-center text-xs text-muted">
+          هر نگرانی، یه قدم آروم‌تر.
+        </p>
+      )}
 
       <div className="mt-5 grid grid-cols-2 gap-3">
         <StatChip
           icon={<Clock className="size-4" />}
           label="میانگین مدت"
-          value={`${formatDurationShort(stats.avgMs)} روز`}
+          value={stats.resolvedCount === 0 ? "—" : `${formatDurationShort(stats.avgMs)} روز`}
         />
         <StatChip
           icon={<BarChart3 className="size-4" />}

@@ -1,4 +1,4 @@
-export async function fileToDataUrl(file: File, max = 720): Promise<string> {
+export async function fileToDataUrl(file: File, max = 640): Promise<string> {
   const bitmap = await createImageBitmap(file);
   const scale = Math.min(1, max / Math.max(bitmap.width, bitmap.height));
   const w = Math.max(1, Math.round(bitmap.width * scale));
@@ -9,7 +9,7 @@ export async function fileToDataUrl(file: File, max = 720): Promise<string> {
   const ctx = canvas.getContext("2d");
   if (!ctx) throw new Error("canvas");
   ctx.drawImage(bitmap, 0, 0, w, h);
-  return canvas.toDataURL("image/jpeg", 0.82);
+  return canvas.toDataURL("image/jpeg", 0.76);
 }
 
 export function startSpeech(onResult: (text: string) => void): () => void {

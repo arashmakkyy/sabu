@@ -69,6 +69,18 @@ export function isoDay(ts: number = Date.now()): string {
   return `${y}-${m}-${day}`;
 }
 
+/** 21:00 → 06:00 */
+export function isNightHour(d: Date = new Date()): boolean {
+  const h = d.getHours();
+  return h >= 21 || h < 6;
+}
+
+/** Calendar key of the current night (the evening the night started). */
+export function nightKey(d: Date = new Date()): string {
+  const h = d.getHours();
+  return isoDay(h < 6 ? d.getTime() - 6 * 3_600_000 : d.getTime());
+}
+
 export function startOfDay(ts: number = Date.now()): number {
   const d = new Date(ts);
   d.setHours(0, 0, 0, 0);

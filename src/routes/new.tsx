@@ -90,27 +90,29 @@ function NewWorry() {
           ))}
         </div>
 
-        <div className="mt-6 flex items-center justify-between">
-          <p className="text-sm font-medium">عروسکتو انتخاب کن</p>
-          {suggested && dollId !== suggested && (
-            <button
-              type="button"
-              className="text-xs text-primary"
-              onClick={() => setDollId(suggested)}
-            >
-              پیشنهاد سبو
-            </button>
-          )}
-        </div>
-        <div className="mt-3 grid grid-cols-2 gap-3">
-          {DOLLS.map((d) => (
-            <DollTile
-              key={d.id}
-              dollId={d.id}
-              selected={dollId === d.id}
-              onSelect={() => setDollId(d.id)}
-            />
-          ))}
+        <div className="mt-6" data-tour="new-dolls">
+          <div className="flex items-center justify-between">
+            <p className="text-sm font-medium">عروسکتو انتخاب کن</p>
+            {suggested && dollId !== suggested && (
+              <button
+                type="button"
+                className="text-xs text-primary"
+                onClick={() => setDollId(suggested)}
+              >
+                پیشنهاد سبو
+              </button>
+            )}
+          </div>
+          <div className="mt-3 grid grid-cols-2 gap-3">
+            {DOLLS.map((d) => (
+              <DollTile
+                key={d.id}
+                dollId={d.id}
+                selected={dollId === d.id}
+                onSelect={() => setDollId(d.id)}
+              />
+            ))}
+          </div>
         </div>
 
         <Button className="mt-6" disabled={!canSubmit} onClick={submit}>

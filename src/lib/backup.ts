@@ -29,12 +29,15 @@ const CATEGORIES = new Set<string>([
 
 export type SabooBackupData = {
   onboarded: boolean;
+  guideDone?: boolean;
   worries: Worry[];
   moods: MoodEntry[];
   notifications: AppNotification[];
   settings: Settings;
   lastNightRitualDay?: string;
   lastMoodPromptDay?: string;
+  lastAutoSleepNight?: string;
+  dollsAsleep?: boolean;
 };
 
 export type SabooBackup = {
@@ -195,12 +198,15 @@ export function parseBackup(raw: string): BackupResult {
 
   const data: SabooBackupData = {
     onboarded: asBool(source.onboarded, true),
+    guideDone: asBool(source.guideDone, true),
     worries,
     moods,
     notifications,
     settings: parseSettings(source.settings),
     lastNightRitualDay: asString(source.lastNightRitualDay) || undefined,
     lastMoodPromptDay: asString(source.lastMoodPromptDay) || undefined,
+    lastAutoSleepNight: asString(source.lastAutoSleepNight) || undefined,
+    dollsAsleep: asBool(source.dollsAsleep, false),
   };
 
   return {
