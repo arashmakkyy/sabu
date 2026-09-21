@@ -38,13 +38,22 @@ function Home() {
   return (
     <div className="px-5 pb-6 pt-5">
       <header className="flex items-start justify-between gap-3 enter-up">
-        <div>
-          <h1 className="text-3xl font-semibold tracking-tight">سبو</h1>
-          <p className="mt-1 max-w-52 text-xs leading-5 text-muted">
-            {name
-              ? `${name}، جای نگرانی‌هات`
-              : "جای نگرانی‌هات و آرامش فردا"}
-          </p>
+        <div className="flex items-center gap-3">
+          <img
+            src="/saboo-logo.png"
+            alt="لوگوی سبو"
+            width={48}
+            height={48}
+            className="size-12 rounded-2xl shadow-card"
+          />
+          <div>
+            <h1 className="text-3xl font-semibold tracking-tight">سبو</h1>
+            <p className="mt-1 max-w-52 text-xs leading-5 text-muted">
+              {name
+                ? `${name}، جای نگرانی‌هات`
+                : "جای نگرانی‌هات و آرامش فردا"}
+            </p>
+          </div>
         </div>
         <div className="relative" data-tour="bell">
           <IconButton label="یادآوری‌ها" onClick={() => setNotifOpen(true)}>

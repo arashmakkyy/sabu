@@ -174,7 +174,16 @@ function Settings() {
       </section>
 
       <section className="mt-6 rounded-3xl bg-card px-5 py-5 shadow-card">
-        <h2 className="text-sm font-semibold">درباره سبو</h2>
+        <div className="flex items-center gap-3">
+          <img
+            src="/saboo-logo.png"
+            alt="لوگوی سبو"
+            width={40}
+            height={40}
+            className="size-10 rounded-xl shadow-card"
+          />
+          <h2 className="text-sm font-semibold">درباره سبو</h2>
+        </div>
         <p className="mt-2 text-sm leading-7 text-ink-soft">
           سبو جای بیرون از ذهنه. عروسکا نگرانی‌تو نگه می‌دارن تا تو سبک‌تر شی.
           داده‌هات فقط رو همین گوشی می‌مونه؛ نه اکانت، نه ابر، نه تبلیغ.

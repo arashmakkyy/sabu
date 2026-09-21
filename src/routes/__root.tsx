@@ -16,14 +16,19 @@ export const Route = createRootRoute({
         content: "width=device-width, initial-scale=1, viewport-fit=cover",
       },
       { title: APP_NAME },
-      { name: "theme-color", content: "#F4EFE6" },
+      { name: "theme-color", content: "#FDF9EF" },
       {
         name: "description",
-        content: "نگرانی‌هاتو بسپار، آروم شو. ذهنت ظرف همه‌چیز نیست.",
+        content:
+          "سبو — سلامت روان برای فردایی بهتر. آرام‌تر، آگاه‌تر، زندگی روشن‌تر. ذهنت ظرف همه‌چیز نیست.",
       },
+      { name: "application-name", content: "سبو" },
     ],
     links: [
       { rel: "icon", type: "image/svg+xml", href: "/favicon.svg" },
+      { rel: "icon", type: "image/png", sizes: "32x32", href: "/favicon-32.png" },
+      { rel: "icon", type: "image/png", sizes: "16x16", href: "/favicon-16.png" },
+      { rel: "canonical", href: "https://mysaboo.ir/" },
       { rel: "stylesheet", href: appCss },
       {
         rel: "stylesheet",
