@@ -1,5 +1,5 @@
 import { useNavigate } from "@tanstack/react-router";
-import { ChevronLeft, MoreHorizontal } from "lucide-react";
+import { ChevronRight, MoreHorizontal } from "lucide-react";
 import type { ReactNode } from "react";
 import { cn } from "@/lib/cn";
 
@@ -22,9 +22,9 @@ export function SubHeader({
           type="button"
           aria-label="برگشت"
           onClick={() => navigate({ to: "/" })}
-          className="tap absolute top-4 left-3 grid size-11 place-items-center rounded-full text-ink"
+          className="tap absolute top-4 right-3 grid size-11 place-items-center rounded-full text-ink"
         >
-          <ChevronLeft className="size-6" strokeWidth={1.8} />
+          <ChevronRight className="size-6" strokeWidth={1.8} />
         </button>
         <div className="text-center">
           <h1 className="text-lg font-semibold tracking-tight">{title}</h1>
@@ -33,7 +33,7 @@ export function SubHeader({
           )}
         </div>
         {(onMore || end) && (
-          <div className="absolute top-4 right-3">
+          <div className="absolute top-4 left-3">
             {end ?? (
               <button
                 type="button"
