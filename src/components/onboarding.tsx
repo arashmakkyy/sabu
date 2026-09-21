@@ -135,7 +135,7 @@ export function Splash({ exiting }: { exiting?: boolean }) {
             <circle className="splash-track-fg" cx="84" cy="84" r="78" />
           </svg>
           <div className="splash-avatar">
-            <img src="/saboo-logo.png" alt="لوگوی سبو" className="size-full object-cover" />
+            <img src="/dolls/mehr.jpg" alt="" className="size-full object-cover" />
           </div>
         </div>
 
