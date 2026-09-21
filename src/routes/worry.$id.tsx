@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useNavigate, useRouter } from "@tanstack/react-router";
 import { Check, ImagePlus, Mic, Type, Plus, Send } from "lucide-react";
 import { useRef, useState, type ReactNode } from "react";
 import { toast } from "sonner";
@@ -18,6 +18,7 @@ export const Route = createFileRoute("/worry/$id")({
 function WorryDetail() {
   const { id } = Route.useParams();
   const navigate = useNavigate();
+  const router = useRouter();
   const worry = useSaboo((s) => s.worries.find((w) => w.id === id));
   const addNote = useSaboo((s) => s.addNote);
   const deleteWorry = useSaboo((s) => s.deleteWorry);
@@ -59,6 +60,11 @@ function WorryDetail() {
   function saveActiveWorry() {
     if (draft.trim()) saveNote("text", draft);
     toast("نگرانی ذخیره شد.");
+    if (window.history.length > 1) {
+      router.history.back();
+    } else {
+      void navigate({ to: "/" });
+    }
   }
 
   async function onPhoto(file?: File) {
