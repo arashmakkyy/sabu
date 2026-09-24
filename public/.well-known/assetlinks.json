@@ -1,0 +1,10 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "ir.mysaboo.app",
+      "sha256_cert_fingerprints": ["69:67:96:72:5C:8F:B2:65:E0:AA:12:48:AF:2C:2F:E9:7B:47:C8:87:19:57:8D:B0:CC:FA:7F:A7:1F:69:A8:64"]
+    }
+  }
+]
