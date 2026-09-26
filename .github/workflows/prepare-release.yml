@@ -1,0 +1,85 @@
+# Prepare Release (Saboo, simplified): the normal way to cut a Saboo release.
+# Adapted from metto's prepare-release.yml, minus metto-only automation.
+#
+# Flow: Actions -> Prepare Release -> enter vX.Y.Z
+#   -> strict semver validation (scripts/android-version.mjs)
+#   -> npm ci + lint + typecheck + unit tests + TWA config check, all inline
+#   -> summary with next steps: merge to main, then tag vX.Y.Z
+#   -> android-release.yml publishes the signed APK/AAB GitHub Release.
+#
+# Metto differences (deliberately dropped for Saboo v1):
+# - No CHANGELOG.md automation (Saboo has no prepare-changelog / release-pr
+#   scripts yet). Release notes are generated from git log in android-release.
+# - No release branch / PR creation / CI dispatch: this workflow NEVER pushes,
+#   merges, tags, creates a GitHub Release, touches signing secrets, or
+#   publishes to any store. It only validates that main is release-ready for
+#   the given version.
+#
+# Third-party Actions are pinned to immutable commit SHAs (comments show the
+# release version), matching the Android workflows.
+name: Prepare Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Release version, e.g. v0.1.0"
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: prepare-release-${{ inputs.version }}
+  cancel-in-progress: false
+
+jobs:
+  prepare:
+    name: validate release readiness
+    runs-on: ubuntu-latest
+    env:
+      VERSION: ${{ inputs.version }}
+    steps:
+      - name: Checkout main (full history + tags)
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Strict version validation
+        # Reuses the tested semver gate (also bounds the Android versionCode).
+        run: node scripts/android-version.mjs "$VERSION"
+
+      - name: Setup Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Validate (lint / typecheck / test / TWA config)
+        run: |
+          set -euo pipefail
+          npm run lint
+          npm run typecheck
+          npm test
+          if [ -d android ]; then
+            node scripts/check-android-config.mjs
+          else
+            echo "android/ wrapper not present yet — skipping TWA config check (see docs/ANDROID_MYCKET.md)."
+          fi
+
+      - name: Summarize
+        run: |
+          {
+            echo "## Ready for ${VERSION:-unknown} (validation passed)"
+            echo ""
+            echo "Next:"
+            echo "1. Merge everything for this release into \`main\`."
+            echo "2. \`git tag ${VERSION:-vX.Y.Z} && git push origin ${VERSION:-vX.Y.Z}\`"
+            echo "3. android-release.yml builds the signed APK + AAB and creates the GitHub Release."
+            echo "4. Upload the APK from the Release to the Myket console."
+          } >> "$GITHUB_STEP_SUMMARY"

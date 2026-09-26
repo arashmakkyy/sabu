@@ -1,0 +1,41 @@
+# Core CI: lint + typecheck + unit tests (Saboo / npm).
+# Adapted from metto's ci.yml: metto uses pnpm, Saboo uses npm + package-lock.json.
+# Runs on pushes to main and on pull requests targeting main.
+# Vercel stays the authoritative production build check, so this workflow
+# deliberately does NOT build.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch: {}
+  # Manual dispatch so Prepare Release can run this exact suite and wait for
+  # it via `gh run watch`. On dispatch everything below still runs.
+
+jobs:
+  ci:
+    name: lint / typecheck / test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Setup Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Unit tests
+        run: npm test
