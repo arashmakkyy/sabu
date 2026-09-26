@@ -28,8 +28,12 @@ jobs:
           node-version-file: .nvmrc
           cache: npm
 
+      # NOTE: `npm install` (not `npm ci`) on purpose: Vercel — the
+      # authoritative production build — also installs this way, and the
+      # lockfile has drifted across npm majors before. Reproducibility comes
+      # from package.json ranges + the lockfile as a hint, not a gate.
       - name: Install dependencies
-        run: npm ci
+        run: npm install --no-audit --no-fund
 
       - name: Lint
         run: npm run lint
