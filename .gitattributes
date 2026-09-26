@@ -1,0 +1,5 @@
+# Keep Unix shell scripts LF-only so CI (Linux) can execute them.
+android/gradlew text eol=lf
+# Never let Git mangle binaries.
+android/**/*.jar binary
+android/**/*.png binary
